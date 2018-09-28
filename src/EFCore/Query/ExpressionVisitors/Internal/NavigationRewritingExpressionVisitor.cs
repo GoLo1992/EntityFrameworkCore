@@ -208,7 +208,7 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public NavigationRewritingExpressionVisitor([NotNull] EntityQueryModelVisitor queryModelVisitor)
-            : this(queryModelVisitor, navigationExpansionSubquery: false)
+            : this(queryModelVisitor, navigationExpansionSubquery: false, rewriteOwnedNavigations: true)
         {
         }
 
@@ -216,19 +216,23 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public NavigationRewritingExpressionVisitor([NotNull] EntityQueryModelVisitor queryModelVisitor, bool navigationExpansionSubquery)
+        public NavigationRewritingExpressionVisitor(
+            [NotNull] EntityQueryModelVisitor queryModelVisitor,
+            bool navigationExpansionSubquery,
+            bool rewriteOwnedNavigations)
         {
             Check.NotNull(queryModelVisitor, nameof(queryModelVisitor));
 
             _queryModelVisitor = queryModelVisitor;
             _navigationRewritingQueryModelVisitor = new NavigationRewritingQueryModelVisitor(this, _queryModelVisitor, navigationExpansionSubquery);
+            RewriteOwnedNavigations = rewriteOwnedNavigations;
         }
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        protected virtual bool RewriteOwnedNavigations { get; set; } = true;
+        protected virtual bool RewriteOwnedNavigations { get; }
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -654,14 +658,12 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal
                 }
             }
 
-            if (newObject != node.Object)
+            if (newObject != node.Object
+                && newObject is NullConditionalExpression nullConditionalExpression)
             {
-                if (newObject is NullConditionalExpression nullConditionalExpression)
-                {
-                    var newMethodCallExpression = node.Update(nullConditionalExpression.AccessOperation, newArguments);
+                var newMethodCallExpression = node.Update(nullConditionalExpression.AccessOperation, newArguments);
 
-                    return new NullConditionalExpression(newObject, newMethodCallExpression);
-                }
+                return new NullConditionalExpression(newObject, newMethodCallExpression);
             }
 
             var newExpression = node.Update(newObject, newArguments);
@@ -959,7 +961,8 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal
         public virtual NavigationRewritingExpressionVisitor CreateVisitorForSubQuery(bool navigationExpansionSubquery)
             => new NavigationRewritingExpressionVisitor(
                 _queryModelVisitor,
-                navigationExpansionSubquery);
+                navigationExpansionSubquery,
+                RewriteOwnedNavigations);
 
         private static Expression CreateKeyComparisonExpressionForCollectionNavigationSubquery(
             Expression leftExpression,
@@ -1020,7 +1023,15 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal
                 if (!RewriteOwnedNavigations
                     && navigation.ForeignKey.IsOwnership)
                 {
-                    sourceExpression = Expression.Property(sourceExpression, navigation.PropertyInfo);
+                    if(sourceExpression.Type != navigation.DeclaringEntityType.ClrType)
+                    {
+                        sourceExpression = Expression.Condition(
+                            Expression.TypeIs(sourceExpression, navigation.DeclaringEntityType.ClrType),
+                            Expression.Convert(sourceExpression, navigation.DeclaringEntityType.ClrType),
+                            Expression.Constant(null, navigation.DeclaringEntityType.ClrType));
+                    }
+
+                    sourceExpression = new NullConditionalExpression(sourceExpression, Expression.Property(sourceExpression, navigation.PropertyInfo));
 
                     continue;
                 }

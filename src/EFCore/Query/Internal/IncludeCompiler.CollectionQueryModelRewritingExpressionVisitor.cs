@@ -90,11 +90,18 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
 
                 var whereClause = collectionQueryModel.BodyClauses
                     .OfType<WhereClause>()
-                    .Single();
+                    .SingleOrDefault();
 
-                whereClause.TransformExpressions(querySourceReferenceFindingExpressionTreeVisitor.Visit);
+                if (whereClause != null)
+                {
+                    whereClause.TransformExpressions(querySourceReferenceFindingExpressionTreeVisitor.Visit);
 
-                collectionQueryModel.BodyClauses.Remove(whereClause);
+                    collectionQueryModel.BodyClauses.Remove(whereClause);
+                }
+                else
+                {
+                    collectionQueryModel.MainFromClause.TransformExpressions(querySourceReferenceFindingExpressionTreeVisitor.Visit);
+                }
 
                 var parentQuerySourceReferenceExpression
                     = querySourceReferenceFindingExpressionTreeVisitor.QuerySourceReferenceExpression;

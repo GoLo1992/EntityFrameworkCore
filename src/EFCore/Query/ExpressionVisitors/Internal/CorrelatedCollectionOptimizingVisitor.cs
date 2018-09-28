@@ -123,7 +123,9 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal
 
         private bool TryRewrite(SubQueryExpression subQueryExpression, bool forceToListResult, Type listResultElementType, out Expression result)
         {
-            if (_queryCompilationContext.TryGetCorrelatedSubqueryMetadata(subQueryExpression.QueryModel.MainFromClause, out var correlatedSubqueryMetadata))
+            if (_queryCompilationContext.TryGetCorrelatedSubqueryMetadata(subQueryExpression.QueryModel.MainFromClause, out var correlatedSubqueryMetadata)
+                && subQueryExpression.QueryModel.BodyClauses.OfType<WhereClause>()
+                    .Any(c => c.Predicate is NullSafeEqualExpression))
             {
                 var parentQsre = new QuerySourceReferenceExpression(correlatedSubqueryMetadata.ParentQuerySource);
                 result = Rewrite(
@@ -413,9 +415,7 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal
 
             if (_queryCompilationContext.IsAsyncQuery)
             {
-                var taskResultExpression = new TaskBlockingExpressionVisitor().Visit(result);
-
-                return taskResultExpression;
+                return new TaskBlockingExpressionVisitor().Visit(result);
             }
 
             return result;

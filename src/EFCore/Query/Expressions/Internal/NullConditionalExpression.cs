@@ -178,6 +178,14 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions.Internal
         }
 
         /// <summary>
+        ///     Returns the member access expression if the supplied expression is a <see cref="NullConditionalExpression"/>.
+        /// </summary>
+        /// <param name="expression"> The expression to unwrap </param>
+        /// <returns> The unwraped member access expression </returns>
+        public static Expression Unwrap(Expression expression)
+            => expression is NullConditionalExpression conditional ? conditional.AccessOperation : expression;
+
+        /// <summary>
         ///     Returns a textual representation of the <see cref="T:System.Linq.Expressions.Expression" />.
         /// </summary>
         /// <returns>
