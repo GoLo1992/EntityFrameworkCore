@@ -33,7 +33,7 @@ namespace Microsoft.EntityFrameworkCore.InMemory.Storage.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        protected IInMemoryDatabase Database => (IInMemoryDatabase)_stateManagerDependencies.Database;
+        protected virtual IInMemoryDatabase Database => (IInMemoryDatabase)_stateManagerDependencies.Database;
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used

@@ -8,8 +8,6 @@ using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Extensions.Internal;
@@ -1729,7 +1727,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         public virtual TResult BindMethodCallExpression<TResult>(
             [NotNull] MethodCallExpression methodCallExpression,
             [CanBeNull] IQuerySource querySource,
-            [NotNull] Func<IPropertyBase, IQuerySource, TResult> methodCallBinder)
+            [NotNull] Func<IProperty, IQuerySource, TResult> methodCallBinder)
         {
             Check.NotNull(methodCallExpression, nameof(methodCallExpression));
             Check.NotNull(methodCallBinder, nameof(methodCallBinder));
@@ -1738,7 +1736,7 @@ namespace Microsoft.EntityFrameworkCore.Query
                 methodCallExpression, querySource,
                 (ps, qs) =>
                 {
-                    var property = ps.Count > 0 ? ps[ps.Count - 1] : null;
+                    var property = ps.Count > 0 ? ps[ps.Count - 1] as IProperty : null;
 
                     return property != null
                         ? methodCallBinder(property, qs)
