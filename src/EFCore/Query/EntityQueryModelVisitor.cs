@@ -1548,7 +1548,7 @@ namespace Microsoft.EntityFrameworkCore.Query
             [NotNull] Type memberType,
             [NotNull] Expression expression,
             int index,
-            [CanBeNull] IPropertyBase property = null)
+            [CanBeNull] IProperty property = null)
         {
             Check.NotNull(memberType, nameof(memberType));
             Check.NotNull(expression, nameof(expression));
@@ -1585,7 +1585,7 @@ namespace Microsoft.EntityFrameworkCore.Query
                     }
 
                     var expression = targetMethodCallExpression.Arguments[0];
-                    if (HasArgumentRoot(expression)
+                    if (HasParameterRoot(expression)
                         && !property.IsShadowProperty)
                     {
                         return Expression.Call(
@@ -1602,7 +1602,7 @@ namespace Microsoft.EntityFrameworkCore.Query
                 }));
         }
 
-        private static bool HasArgumentRoot(Expression expression)
+        private static bool HasParameterRoot(Expression expression)
         {
             if (expression.NodeType == ExpressionType.Parameter)
             {
@@ -1621,7 +1621,7 @@ namespace Microsoft.EntityFrameworkCore.Query
             }
             else if (expression is MemberExpression memberExpression)
             {
-                return HasArgumentRoot(memberExpression.Expression);
+                return HasParameterRoot(memberExpression.Expression);
             }
 
             return false;
@@ -1779,7 +1779,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         /// </returns>
         public virtual TResult BindMethodCallExpression<TResult>(
             [NotNull] MethodCallExpression methodCallExpression,
-            [NotNull] Func<IPropertyBase, IQuerySource, TResult> methodCallBinder)
+            [NotNull] Func<IProperty, IQuerySource, TResult> methodCallBinder)
         {
             Check.NotNull(methodCallExpression, nameof(methodCallExpression));
             Check.NotNull(methodCallBinder, nameof(methodCallBinder));
@@ -1794,7 +1794,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         /// <param name="methodCallBinder"> The method call binder. </param>
         public virtual void BindMethodCallExpression(
             [NotNull] MethodCallExpression methodCallExpression,
-            [NotNull] Action<IPropertyBase, IQuerySource> methodCallBinder)
+            [NotNull] Action<IProperty, IQuerySource> methodCallBinder)
         {
             Check.NotNull(methodCallExpression, nameof(methodCallExpression));
             Check.NotNull(methodCallBinder, nameof(methodCallBinder));
