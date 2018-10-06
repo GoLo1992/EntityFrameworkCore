@@ -544,12 +544,10 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal
         private static bool AreEquivalentPropertyExpressions(Expression expression1, Expression expression2)
         {
             var expressionWithoutConvert1 = expression1.RemoveConvert();
-            var expressionWithoutNullConditional1 = (expressionWithoutConvert1 as NullConditionalExpression)?.AccessOperation
-                                                    ?? expressionWithoutConvert1;
+            var expressionWithoutNullConditional1 = NullConditionalExpression.Unwrap(expressionWithoutConvert1);
 
             var expressionWithoutConvert2 = expression2.RemoveConvert();
-            var expressionWithoutNullConditional2 = (expressionWithoutConvert2 as NullConditionalExpression)?.AccessOperation
-                                                    ?? expressionWithoutConvert2;
+            var expressionWithoutNullConditional2 = NullConditionalExpression.Unwrap(expressionWithoutConvert2);
 
             QuerySourceReferenceExpression qsre1 = null;
             QuerySourceReferenceExpression qsre2 = null;
@@ -641,8 +639,7 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal
                     e =>
                     {
                         var expressionWithoutConvert = e.RemoveConvert();
-                        var projectionExpression = (expressionWithoutConvert as NullConditionalExpression)?.AccessOperation
-                                                   ?? expressionWithoutConvert;
+                        var projectionExpression = NullConditionalExpression.Unwrap(expressionWithoutConvert);
 
                         if (projectionExpression is MethodCallExpression methodCall
                             && methodCall.Method.IsEFPropertyMethod())

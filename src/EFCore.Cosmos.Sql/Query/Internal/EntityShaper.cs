@@ -111,7 +111,7 @@ namespace Microsoft.EntityFrameworkCore.Cosmos.Sql.Query.Internal
         {
             var valueBuffer = new ValueBuffer(entityInfo.ValueBufferFactory(jObject));
 
-            if (bufferedQuery)
+            if (!bufferedQuery)
             {
                 if (trackingQuery)
                 {

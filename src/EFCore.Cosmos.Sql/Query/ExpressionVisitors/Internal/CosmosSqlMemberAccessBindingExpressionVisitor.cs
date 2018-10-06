@@ -56,7 +56,7 @@ namespace Microsoft.EntityFrameworkCore.Cosmos.Sql.Query.ExpressionVisitors.Inte
                         {
                             foreach (var property in properties)
                             {
-                                if(property is INavigation)
+                                if (property is INavigation)
                                 {
                                     _queryModelVisitor.AllMembersBoundToJObject = false;
 

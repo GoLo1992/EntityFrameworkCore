@@ -17,6 +17,6 @@ namespace Microsoft.EntityFrameworkCore.Cosmos.Sql.Query.ExpressionVisitors.Inte
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public NavigationRewritingExpressionVisitor Create(EntityQueryModelVisitor queryModelVisitor)
-            => new NavigationRewritingExpressionVisitor(queryModelVisitor, navigationExpansionSubquery: false, rewriteOwnedNavigations: false);
+            => new CosmosSqlNavigationRewritingExpressionVisitor(queryModelVisitor, navigationExpansionSubquery: false);
     }
 }
