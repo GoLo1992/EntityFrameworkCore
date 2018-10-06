@@ -401,7 +401,7 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal
 
             if (_queryCompilationContext.IsAsyncQuery)
             {
-                arguments.Add(QueryCompilationContext.CancellationTokenParameter);
+                arguments.Add(IncludeCompiler.CancellationTokenParameter);
             }
 
             var result = Expression.Call(
